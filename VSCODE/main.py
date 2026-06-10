@@ -55,8 +55,6 @@ def draw_bones(image, hand_landmarks):
         cv2.circle(image, point, 4, (255, 0, 0), cv2.FILLED)
 
 cap = cv2.VideoCapture(0)
-
-# BIẾN LƯU TRỮ LỆNH CUỐI CÙNG ĐỂ CHỐNG SPAM
 last_cmd = ""
 
 while cap.isOpened():
@@ -67,8 +65,6 @@ while cap.isOpened():
 
     mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
     results = detector.detect(mp_image)
-
-    # Mặc định rỗng (Không làm gì cả)
     cmd = "" 
     
     if results.hand_landmarks:
@@ -80,15 +76,11 @@ while cap.isOpened():
             elif count == 2: cmd = 'B'
             elif count == 3: cmd = 'L'
             elif count == 4: cmd = 'R'
-            else: cmd = 'S' # 0 hoặc 5 ngón thì quy ước là Dừng
+            else: cmd = 'S' 
             
             cv2.putText(frame, f"CMD: {cmd} | Fingers: {count}", (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
-    # ==========================================
-    # LOGIC CHUYỂN MẠCH THÔNG MINH
-    # ==========================================
     if cmd != "" and cmd != last_cmd:
-        # 1. Có tay trong hình VÀ lệnh thay đổi -> Gửi đi
         try:
             cmd_conn.sendall((cmd + '\n').encode('utf-8'))
             last_cmd = cmd
@@ -96,14 +88,11 @@ while cap.isOpened():
             break
             
     elif cmd == "" and last_cmd != "":
-        # 2. Vừa rụt tay ra khỏi Camera -> Gửi lệnh Dừng (S) ĐÚNG 1 LẦN
         try:
             cmd_conn.sendall(('S\n').encode('utf-8'))
-            last_cmd = "" # Đưa về rỗng để nhường quyền cho C++
+            last_cmd = "" 
         except:
             break
-
-    # Gửi Video Livestream
     _, buffer = cv2.imencode('.jpg', frame, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
     size = len(buffer)
     try:
